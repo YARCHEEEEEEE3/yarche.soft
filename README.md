@@ -103,3 +103,11 @@ Playwright перевіряє композицію, справжню кнопк�
 Використано PKCE. Лише справжня Supabase-сесія відкриває заглушку #workspace; реальна робоча область та генерація не реалізовані. OAuth потребує HTTP(S)-хостингу, конфігурації й окремої перевірки з Google-акаунтом.
 
 Попередні версії та резервні копії: /workspace/scratch/sakyra/.
+
+### Script workspace
+
+The `#scripts` tab is a responsive, local-first editor in the studio's pink glass style. Typing starts a saved project; the selected project survives a tab refresh. It includes live word/character counts, separate new drafts, confirmed text clearing and a next-step link to voiceover.
+
+UTF-8 `.txt` imports create a new project without overwriting the current draft. Files are limited to 100 KB and scripts to 20,000 characters; invalid encoding and oversized input are rejected. “Generate script / Test” opens an explicitly labelled local template builder, not an AI API. Voice generation remains a preview.
+
+Validation: `npx playwright test tests/script.spec.ts tests/dashboard.spec.ts` covers persistence, project selection, imports, preservation of drafts, templates, clearing and mobile layouts.
