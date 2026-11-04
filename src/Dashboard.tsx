@@ -1,14 +1,14 @@
 import {useEffect,useRef,useState} from 'react';
-import {ArrowRight,Bell,ChartNoAxesColumnIncreasing,Check,ChevronDown,ChevronRight,Clapperboard,Download,Ellipsis,FileText,Film,Flower2,Folder,House,Layers,Menu,Mic,Monitor,Plus,Search,Settings,Smartphone,Sparkles,Trash2,Upload} from 'lucide-react';
+import {ArrowRight,Bell,ChartNoAxesColumnIncreasing,Check,ChevronDown,ChevronRight,Clapperboard,Download,Ellipsis,FileText,Film,Flower2,Folder,House,Layers,Menu,Mic,Monitor,Plus,Search,Settings,Smartphone,Sparkles,Trash2} from 'lucide-react';
 import StudioBrand,{Blossom} from './StudioBrand';
 import {readPreferences,preferencesStorageWarning} from './studio/preferences';
 import {examples,projectId,readProjects,saveProjects,type Project} from './studio/projects';
 import {studioCopy,type StudioCopy} from './studio/copy';
 import Dialog from './studio/Dialog';
+import StudioNavigation from './studio/Navigation';
 import './dashboard.css';
 
 type View='studio'|'projects'|'scripts'|'voice'|'video'|'export';
-const navigation=[{id:'studio',key:'home',icon:House},{id:'projects',key:'projects',icon:Folder},{id:'scripts',key:'scripts',icon:FileText},{id:'voice',key:'voice',icon:Mic},{id:'video',key:'video',icon:Film},{id:'export',key:'export',icon:Upload}] as const;
 function Landscape(){return <svg className="studio-landscape" viewBox="0 0 260 100" aria-hidden="true"><path d="m0 95 80-52 22 15 29-38 82 70 47-15v25H0" fill="currentColor" opacity=".23"/><path d="m107 48 24-29 29 29-15-7-10 5-7-9-10 10Z" fill="white" opacity=".5"/><path d="M156 48q40 9 80-5l-6 11q-31 9-70 3Zm5 18h70v7h-70m11-18-5 44h7l6-43m35-2 6 45h7l-5-47" fill="currentColor" opacity=".55"/></svg>}
 function StudioLogo(){return <StudioBrand className="dashboard-logo"/>}
 function Cover({cover}:{cover:number}){return <span className={'project-cover cover-'+cover} aria-hidden="true"/>}
@@ -47,7 +47,7 @@ export default function Dashboard({view='studio'}:{view?:View}){
  function save(project:Project){const now=new Date().toISOString(),isNew=!project.id,next={...project,id:project.id||projectId(),createdAt:project.createdAt||now,updatedAt:now};commit(isNew?[next,...projects]:projects.map(p=>p.id===next.id?next:p),isNew?t.created:t.saved);setSelectedId(next.id);setModal(null);}
  function duplicate(project:Project){setCardMenu(null);setModal({project:{...project,id:'',name:(project.name+t.copySuffix).slice(0,80),createdAt:'',updatedAt:''},example:false});}
  function download(){if(!selected)return;const data=JSON.stringify({version:1,studio:prefs.name,project:selected},null,2),url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=(selected.name.replace(/[^\p{L}\p{N}_-]/gu,'_')||'sakyra')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);const now=new Date().toISOString();setLastExport(now);try{localStorage.setItem('sakyra.last-project-export',now);}catch{setStorageWarning(true);}setToast(t.exported);}
- const nav=<><nav aria-label={prefs.language==='uk'?'Розділи студії':'Studio sections'}>{navigation.map(({id,key,icon:Icon})=><a key={id} href={'#'+id} aria-current={view===id?'page':undefined} onClick={()=>setDrawer(false)}><Icon size={21}/><span>{t[key]}</span></a>)}</nav><div className="sidebar-divider"/><a className="sidebar-settings" href="#settings"><Settings size={21}/>{t.settings}</a></>;
+ const nav=<StudioNavigation view={view} t={t} label={prefs.language==='uk'?'Розділи студії':'Studio sections'} onNavigate={()=>setDrawer(false)}/>;
  const selectProject=projects.length?<label className="project-select-label">{t.project}<select aria-label={t.choose} value={selected?.id||''} onChange={e=>setSelectedId(e.target.value)}>{projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>:null;
  const showExamples=projects.length===0;
  const filtered=projects.filter(p=>(p.name+' '+p.idea).toLocaleLowerCase().includes(query.toLocaleLowerCase()));
@@ -84,7 +84,7 @@ export default function Dashboard({view='studio'}:{view?:View}){
    </section>
   </div>
   <div className={'studio-toast '+(toast?'visible':'')} role="status" aria-live="polite">{toast&&<Check size={17}/>}<span>{toast}</span></div>
-  {drawer&&<Dialog title="SAKYRA" closeLabel={t.close} onClose={()=>setDrawer(false)} className="studio-mobile-nav">{nav}</Dialog>}
+  {drawer&&<Dialog title={<img className="menu-brand" src="/scene/sakyra-logo.png" alt="SAKYRA"/>} closeLabel={t.close} onClose={()=>setDrawer(false)} className="studio-mobile-nav">{nav}</Dialog>}
   {modal&&<ProjectEditor project={modal.project} isExample={modal.example} onSave={save} onClose={()=>setModal(null)} t={t}/>}
   {deleting&&<Dialog title={t.deleteTitle} closeLabel={t.close} onClose={()=>setDeleting(null)}><p className="delete-project-name">{deleting.name}</p><p>{t.deleteText}</p><div className="dialog-actions"><button className="studio-secondary" onClick={()=>setDeleting(null)}>{t.cancel}</button><button className="studio-primary delete-button" onClick={()=>{commit(projects.filter(p=>p.id!==deleting.id),t.deleted);setDeleting(null);}}><Trash2 size={17}/>{t.delete}</button></div></Dialog>}
  </main>;
