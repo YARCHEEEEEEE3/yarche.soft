@@ -1,3 +1,9 @@
+# Added in SAKYRA studio dashboard (v7)
+
+- scene/dashboard-room.png: image-generation edit based on the user’s Japanese tea-room dashboard reference. All painted UI was removed; warm shoji room, cherry blossoms, lake/Fuji view, sleeping cat and desk accessories remain in the generated environment plate.
+- scene/project-covers.png: newly generated three-panel Japanese pixel-art illustration: street/pagoda, temple, and moonlit torii. Used as cropped CSS project thumbnails, not generated user videos.
+- Dashboard interface: real React/CSS panels and controls, Lucide icons, SVG landscape and blossom decorations, animated CSS petals and steam. Demo metrics are visibly labeled examples.
+
 # Mobile title addition
 
 - scene/title-mobile.png: image-generation portrait adaptation of living-background.png, preserving the SAKYRA wordmark and Japanese setting while recomposing for a narrow phone viewport. No painted controls. The desktop artwork is preserved.

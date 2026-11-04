@@ -11,18 +11,18 @@ test('reference composition uses real editable controls',async({page})=>{
 test('preferences save and survive a reload with a translated interface',async({page})=>{
  await page.goto('/#setup');await page.getByLabel('Назва студії').fill('Yarche Films');await page.getByRole('radio',{name:'9:16 Shorts'}).check();await page.getByLabel('Мова інтерфейсу').selectOption('en');
  await expect(page.getByRole('heading',{name:'Set up your studio'})).toBeVisible();await page.getByRole('button',{name:'Enter the studio'}).click();
- await expect(page.getByRole('heading',{name:'Your studio is ready'})).toBeFocused();await expect(page.getByRole('heading',{name:'Yarche Films'})).toBeVisible();await expect(page.getByRole('status')).toContainText('saved');
- await page.reload();await expect(page.getByLabel('Studio name')).toHaveValue('Yarche Films');await expect(page.getByLabel('Interface language')).toHaveValue('en');await expect(page.getByRole('radio',{name:'9:16 Shorts'})).toBeChecked();
+ await expect(page.getByRole('heading',{name:'Your studio is ready.'})).toBeFocused();await expect(page.getByRole('button',{name:'Studio menu'})).toContainText('Yarche Films');
+ await page.reload();await page.goto('/#settings');await expect(page.getByLabel('Studio name')).toHaveValue('Yarche Films');await expect(page.getByLabel('Interface language')).toHaveValue('en');await expect(page.getByRole('radio',{name:'9:16 Shorts'})).toBeChecked();
 });
 
 test('empty name is rejected and storage errors do not lose the form',async({page})=>{
  await page.addInitScript(()=>{Storage.prototype.setItem=()=>{throw new Error('Unavailable')};});await page.goto('/#setup');await page.getByLabel('Назва студії').fill('   ');await page.getByRole('button',{name:'Увійти в студію'}).click();await expect(page.getByRole('alert')).toContainText('Вкажи назву');await expect(page.getByLabel('Назва студії')).toBeFocused();
- await page.getByLabel('Назва студії').fill('Тест');await page.getByRole('button',{name:'Увійти в студію'}).click();await expect(page.getByRole('status')).toContainText('не дозволив');await page.getByRole('button',{name:'Змінити параметри'}).click();await expect(page.getByLabel('Назва студії')).toHaveValue('Тест');
+ await page.getByLabel('Назва студії').fill('Тест');await page.getByRole('button',{name:'Увійти в студію'}).click();await expect(page.getByRole('alert')).toContainText('не дозволяє');await page.goto('/#settings');await expect(page.getByLabel('Назва студії')).toHaveValue('Тест');
 });
 
 test('mobile layout stays usable without horizontal overflow',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.goto('/#setup');await expect(page.getByRole('button',{name:'Увійти в студію'})).toBeInViewport();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);await page.getByRole('radio',{name:'9:16 Shorts'}).check();await page.getByRole('button',{name:'Увійти в студію'}).click();await expect(page.getByRole('heading',{name:'Твоя студія готова'})).toBeVisible();
- await page.getByRole('button',{name:'Змінити параметри'}).click();await page.screenshot({path:'/workspace/scratch/sakyra/SAKYRA-v5-mobile.png'});
+ await page.setViewportSize({width:390,height:844});await page.goto('/#setup');await expect(page.getByRole('button',{name:'Увійти в студію'})).toBeInViewport();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);await page.getByRole('radio',{name:'9:16 Shorts'}).check();await page.getByRole('button',{name:'Увійти в студію'}).click();await expect(page.getByRole('heading',{name:'Твоя студія готова.'})).toBeVisible();
+ await page.goto('/#settings');await page.screenshot({path:'/workspace/scratch/sakyra/SAKYRA-v5-mobile.png'});
 });
 
 test('keyboard selection and reduced-motion are supported',async({page})=>{

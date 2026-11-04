@@ -4,6 +4,7 @@ import ReferenceEffects from './ReferenceEffects';
 import LivingScene from './LivingScene';
 import GoogleIcon from './GoogleIcon';
 import {auth} from './auth';
+import {hasPreferences} from './studio/preferences';
 
 export default function LoginPage(){
   const busyRef=useRef(false),imageRef=useRef<HTMLImageElement>(null);
@@ -12,13 +13,13 @@ export default function LoginPage(){
     let alive=true;
     const params=new URLSearchParams(location.hash.slice(1));if(params.has('error_description'))setMessage('Не вдалося завершити вхід. Спробуй ще раз.');
     if(!auth)return;
-    auth.auth.getSession().then(({data,error})=>{if(!alive)return;if(error)setMessage('Не вдалося перевірити вхід. Спробуй ще раз.');if(data.session)location.hash='setup';});
-    const {data}=auth.auth.onAuthStateChange((_event,next)=>{if(!alive)return;if(next)location.hash='setup';});
+    auth.auth.getSession().then(({data,error})=>{if(!alive)return;if(error)setMessage('Не вдалося перевірити вхід. Спробуй ще раз.');if(data.session)location.hash=hasPreferences()?'studio':'setup';});
+    const {data}=auth.auth.onAuthStateChange((_event,next)=>{if(!alive)return;if(next)location.hash=hasPreferences()?'studio':'setup';});
     return()=>{alive=false;data.subscription.unsubscribe();};
   },[]);
   async function login(){
     if(busyRef.current)return;setMessage('');
-    if(!auth){location.hash='setup';return;}
+    if(!auth){location.hash=hasPreferences()?'studio':'setup';return;}
     if(!/^https?:$/.test(location.protocol)){setMessage('Для входу через Google відкрий SAKYRA за адресою сайту. Цей HTML — автономний перегляд.');return;}
     busyRef.current=true;setBusy(true);
     try{const {error}=await auth.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});if(error)throw error;}
