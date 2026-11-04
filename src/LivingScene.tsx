@@ -9,7 +9,7 @@ export default function LivingScene({image}:{image:HTMLImageElement}){
     let renderer=createRenderer(glCanvas,image),frame=0,last=0,time=0,dead=false,slow=0,quality=1;
     function mode(){glCanvas.style.visibility=renderer?'visible':'hidden';cpu.style.visibility=renderer?'hidden':'visible';container.dataset.renderer=renderer?'webgl':'canvas2d';}
     function request(){if(!frame&&!dead&&!document.hidden)frame=requestAnimationFrame(render);}
-    function resize(){const box=container.getBoundingClientRect(),w=Math.min(2560,Math.round(box.width*Math.min(devicePixelRatio,2)*quality)),h=Math.round(w*941/1672);
+    function resize(){const box=container.getBoundingClientRect(),w=Math.min(2560,Math.round(box.width*Math.min(devicePixelRatio,2)*quality)),h=Math.max(1,Math.round(w*box.height/Math.max(1,box.width)));
       glCanvas.width=cpu.width=w;glCanvas.height=cpu.height=h;last=0;request();}
     function render(now:number){
       frame=0;if(dead||document.hidden)return;
@@ -20,10 +20,12 @@ export default function LivingScene({image}:{image:HTMLImageElement}){
       else{
         const w=cpu.width,h=cpu.height;ctx.clearRect(0,0,w,h);
         if(!media.matches){
-          // Fallback distorts only water, preserving the anchored scene above it.
-          ctx.save();ctx.beginPath();ctx.moveTo(w*.30,h*.79);ctx.lineTo(w,h*.79);ctx.lineTo(w,h);ctx.lineTo(w*.53,h);ctx.closePath();ctx.clip();
-          for(let y=Math.floor(h*.79);y<h;y+=3){const q=(y/h-.79)/.21,dx=(Math.sin(y*.16+time)+Math.sin(y*.28-time*.7)*.4)*(1+q*2);
-            ctx.drawImage(image,0,y/h*image.naturalHeight,image.naturalWidth,3/h*image.naturalHeight,dx,y,w,3);}
+          const iw=image.naturalWidth,ih=image.naturalHeight,portrait=ih>iw;
+          const fit=Math.max(w/iw,h/ih),ox=(w-iw*fit)/2,oy=(h-ih*fit)/2;
+          const top=portrait?.74:.79,left=portrait?.24:.30,bottom=portrait?.54:.53;
+          ctx.save();ctx.translate(ox,oy);ctx.scale(fit,fit);ctx.beginPath();ctx.moveTo(iw*left,ih*top);ctx.lineTo(iw,ih*top);ctx.lineTo(iw,ih);ctx.lineTo(iw*bottom,ih);ctx.closePath();ctx.clip();
+          for(let y=Math.floor(ih*top);y<ih;y+=3){const q=(y/ih-top)/(1-top),dx=(Math.sin(y*.16+time)+Math.sin(y*.28-time*.7)*.4)*(1+q*2),slice=Math.min(3,ih-y);
+            ctx.drawImage(image,0,y,iw,slice,dx,y,iw,slice);}
           ctx.restore();
         }
       }

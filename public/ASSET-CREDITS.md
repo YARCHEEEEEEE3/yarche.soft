@@ -1,3 +1,7 @@
+# Mobile title addition
+
+- scene/title-mobile.png: image-generation portrait adaptation of living-background.png, preserving the SAKYRA wordmark and Japanese setting while recomposing for a narrow phone viewport. No painted controls. The desktop artwork is preserved.
+
 # Added in SAKYRA v5
 
 - scene/onboarding-background.png: generated edit based on the user’s new first-launch reference. The painted form, logo and loose petals were removed to provide a clean scenery plate. Japanese veranda, lantern, cat, cherry trees, Fuji, waterfall and torii setting retained as a visual interpretation.

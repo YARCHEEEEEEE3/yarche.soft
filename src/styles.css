@@ -19,3 +19,17 @@
 .workspace-entry{position:fixed;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);width:min(480px,90vw);padding:26px;border:1px solid #fff;border-radius:24px;background:#fff7f7f5;box-shadow:0 18px 70px #56374b30}.workspace-entry h2{font-size:23px}.workspace-entry p{font-size:13px;line-height:1.7}.workspace-entry button{border:1px solid #e7b2cc;border-radius:20px;background:white;padding:9px 24px;color:#81425f}.workspace-entry button:focus-visible{outline:3px solid #8a3e6c;outline-offset:3px}
 @media(max-width:600px){.reference-login{gap:16px;padding:0 20px;position:absolute;left:50%;transform:translateX(-50%)}.reference-login:hover{transform:translateX(-50%) translateY(-2px)}.reference-login:active{transform:translateX(-50%) scale(.98)}.auth-message{top:78%;font-size:12px;padding:10px 14px}}
 @media(prefers-reduced-motion:reduce){.reference-effects{visibility:hidden}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.title-picture{display:block;width:100%;height:100%}
+.studio-entry-icon{color:#bd5489;stroke-width:1.7}
+.preview-caption{position:absolute;z-index:3;top:60.5%;left:50%;transform:translateX(-50%);margin:0;color:#70455f;font-size:clamp(10px,.85cqw,14px);white-space:nowrap;text-shadow:0 1px 8px #fff}
+@media(max-width:650px) and (orientation:portrait){
+ .reference-world{height:100vh;height:100svh;background:#f4dce9}
+ .reference-stage{width:100%;height:100%;aspect-ratio:auto}
+ .reference-art{object-fit:cover;object-position:center}
+ .login-target{left:50%;top:46%;width:min(84%,360px);height:60px;transform:translateX(-50%)}
+ .reference-login{position:relative;top:auto;left:auto;transform:none;width:100%;height:60px;min-width:0;padding:0 18px;gap:clamp(10px,4vw,16px);font-size:clamp(16px,4.6vw,18px);letter-spacing:-.5px;border-color:#fff9;box-shadow:inset 0 1px 3px #fff9,0 8px 28px #f7529655,0 0 34px #ff76ab38}
+ .reference-login>svg:first-child{width:31px}.reference-login .login-arrow{width:25px}
+ .reference-login:hover{transform:translateY(-2px)}.reference-login:active{transform:scale(.98)}
+ .preview-caption{top:calc(46% + 74px);font-size:11px;max-width:90%;text-align:center}
+ .auth-message{top:calc(46% + 104px)}
+}

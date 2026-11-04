@@ -12,11 +12,11 @@ export default function ReferenceEffects(){
     const ripples:Ripple[]=[];
     let frame=0,last=0,time=0,width=1,height=1,dead=false;
     const request=()=>{if(!frame&&!dead&&!document.hidden&&!media.matches)frame=requestAnimationFrame(render);};
-    function resize(){const box=canvas.getBoundingClientRect();width=Math.max(1,Math.min(2560,Math.round(box.width*Math.min(devicePixelRatio,2))));height=Math.round(width*941/1672);canvas.width=width;canvas.height=height;last=0;request();}
+    function resize(){const box=canvas.getBoundingClientRect();width=Math.max(1,Math.min(2560,Math.round(box.width*Math.min(devicePixelRatio,2))));height=Math.max(1,Math.round(width*box.height/Math.max(1,box.width)));canvas.width=width;canvas.height=height;last=0;request();}
     function render(now:number){
       frame=0;if(dead||document.hidden)return;if(media.matches){ctx.clearRect(0,0,width,height);return;}
       const dt=last?Math.min(.05,(now-last)/1000):0;last=now;time+=dt;ctx.clearRect(0,0,width,height);
-      const scale=width/1672,arrival=Math.min(1,time/.8),wind=.012+Math.sin(time*.24)*.008;
+      const scale=Math.max(width/1672,.65),arrival=Math.min(1,time/.8),wind=.012+Math.sin(time*.24)*.008;
       // Expanding elliptical ripples appear where a petal reaches the lake.
       for(let i=ripples.length-1;i>=0;i--){const r=ripples[i];r.age+=dt;if(r.age>3){ripples.splice(i,1);continue;}
         ctx.save();ctx.strokeStyle='rgba(246,198,219,'+(.23*(1-r.age/3))+')';ctx.lineWidth=scale;

@@ -9,7 +9,7 @@ function readPreferences():Preferences{
   try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&typeof saved.name==='string'&&saved.name.trim()&&saved.name.length<=48&&(saved.language==='uk'||saved.language==='en')&&(saved.format==='16:9'||saved.format==='9:16'))return saved;}catch{/* Storage can be unavailable in a private/local-file context. */}
   return {name:'Моя студія',language:'uk',format:'16:9'};
 }
-const copy={uk:{badge:'Перший запуск',title:'Налаштуй свою',accent:'студію',subtitle:'Кілька параметрів, і можна починати створювати відео',name:'Назва студії',language:'Мова інтерфейсу',format:'Формат відео',default:'за замовчуванням',enter:'Увійти в студію',note:'Усі параметри можна буде змінити в налаштуваннях пізніше',required:'Вкажи назву студії — від 1 до 48 символів.',ready:'Твоя студія готова',saved:'Налаштування збережено на цьому пристрої.',failed:'Браузер не дозволив зберегти параметри. Вони діятимуть до закриття вкладки.',edit:'Змінити параметри',preview:'Це попередній перегляд студії. Генерацію відео ще не підключено.',back:'До сторінки входу'},en:{badge:'First launch',title:'Set up your',accent:'studio',subtitle:'A few details, and you’re ready to start creating videos',name:'Studio name',language:'Interface language',format:'Default video',default:'format',enter:'Enter the studio',note:'You can change all these preferences in settings later',required:'Enter a studio name between 1 and 48 characters.',ready:'Your studio is ready',saved:'Your preferences are saved on this device.',failed:'Your browser could not save these preferences. They will last until this tab closes.',edit:'Edit preferences',preview:'This is a studio preview. Video generation is not connected yet.',back:'Back to sign in'}};
+const copy={uk:{badge:'Перший запуск',title:'Налаштуй свою',accent:'студію',subtitle:'Кілька параметрів, і можна починати створювати відео',name:'Назва студії',language:'Мова інтерфейсу',format:'Формат відео',default:'за замовчуванням',enter:'Увійти в студію',note:'Усі параметри можна буде змінити в налаштуваннях пізніше',required:'Вкажи назву студії — від 1 до 48 символів.',ready:'Твоя студія готова',saved:'Налаштування збережено на цьому пристрої.',failed:'Браузер не дозволив зберегти параметри. Вони діятимуть до закриття вкладки.',edit:'Змінити параметри',preview:'Це попередній перегляд студії. Генерацію відео ще не підключено.',back:'На титульну'},en:{badge:'First launch',title:'Set up your',accent:'studio',subtitle:'A few details, and you’re ready to start creating videos',name:'Studio name',language:'Interface language',format:'Default video',default:'format',enter:'Enter the studio',note:'You can change all these preferences in settings later',required:'Enter a studio name between 1 and 48 characters.',ready:'Your studio is ready',saved:'Your preferences are saved on this device.',failed:'Your browser could not save these preferences. They will last until this tab closes.',edit:'Edit preferences',preview:'This is a studio preview. Video generation is not connected yet.',back:'Back to title'}};
 export default function Onboarding(){
   const [prefs,setPrefs]=useState<Preferences>(readPreferences),[done,setDone]=useState(false),[error,setError]=useState(false),[saved,setSaved]=useState(true),[image,setImage]=useState<HTMLImageElement|null>(null);
   const input=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),t=copy[prefs.language];
@@ -27,7 +27,6 @@ export default function Onboarding(){
           <div className="studio-summary"><div className="studio-symbol"><Clapperboard size={35}/></div><h2>{prefs.name}</h2><p>{prefs.language==='uk'?'Українська':'English'}<span>·</span>{prefs.format}<span>·</span>{prefs.format==='16:9'?'YouTube':'Shorts'}</p></div>
           <p className="preview-note">{t.preview}</p>
           <button className="enter-studio" onClick={()=>{setDone(false);requestAnimationFrame(()=>input.current?.focus());}}><Settings2 size={21}/><span>{t.edit}</span><Blossom className="button-blossom"/></button>
-          <a className="back-to-login" href="#login">{t.back}<ArrowRight size={15}/></a>
         </>:<>
           <h1 id="setup-title">{t.title} <span>{t.accent}</span></h1>
           <p className="setup-subtitle">{t.subtitle}</p>
@@ -48,6 +47,7 @@ export default function Onboarding(){
           </form>
           <p className="setup-footnote"><Info size={16}/><span>{t.note}</span></p>
         </>}
+        <a className="back-to-login" href="#login">{t.back}<ArrowRight size={15}/></a>
       </section>
     </div>
   </main>;

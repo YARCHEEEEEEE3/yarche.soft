@@ -24,6 +24,8 @@ export function createRenderer(canvas:HTMLCanvasElement,image:HTMLImageElement){
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);
     gl.uniform1i(gl.getUniformLocation(program,'uImage'),0);
+    gl.uniform2f(gl.getUniformLocation(program,'uImageSize'),image.naturalWidth,image.naturalHeight);
+    gl.uniform1f(gl.getUniformLocation(program,'uPortrait'),image.naturalHeight>image.naturalWidth?1:0);
     const clock=gl.getUniformLocation(program,'uTime'),resolution=gl.getUniformLocation(program,'uResolution'),motion=gl.getUniformLocation(program,'uMotion');
     return {
       draw(time:number,reduced:boolean){if(gl.isContextLost())return;gl.viewport(0,0,canvas.width,canvas.height);gl.uniform1f(clock,time);gl.uniform2f(resolution,canvas.width,canvas.height);gl.uniform1f(motion,reduced?0:1);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);},

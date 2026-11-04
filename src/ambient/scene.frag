@@ -5,16 +5,20 @@ precision mediump float;
 #endif
 uniform sampler2D uImage;
 uniform vec2 uResolution;
+uniform vec2 uImageSize;
+uniform float uPortrait;
 uniform float uTime;
 uniform float uMotion;
 varying vec2 vUv;
 void main(){
-  vec2 uv=vUv;
+  float cover=max(uResolution.x/uImageSize.x,uResolution.y/uImageSize.y);
+  vec2 uv=(vUv-.5)*uResolution/(uImageSize*cover)+.5;
   vec4 original=texture2D(uImage,uv);
   float t=uTime;
   // Exclude the entire logo and its decorative branches from deformation.
   float branding=smoothstep(.22,.25,uv.x)*(1.-smoothstep(.75,.78,uv.x))*
     smoothstep(.24,.27,uv.y)*(1.-smoothstep(.45,.47,uv.y));
+  if(uPortrait>.5)branding=smoothstep(.22,.26,uv.y)*(1.-smoothstep(.40,.44,uv.y));
   // Anchored cherry tree: only canopy and branch tips bend a few screen pixels.
   float canopy=(1.-smoothstep(.48,.57,uv.x))*(1.-smoothstep(.18,.28,uv.y));
   float leftBranches=(1.-smoothstep(.13,.23,uv.x))*(1.-smoothstep(.46,.61,uv.y));
@@ -28,9 +32,10 @@ void main(){
   float cloud=smoothstep(.73,.82,uv.x)*(1.-smoothstep(.28,.35,uv.y))*smoothstep(.10,.16,uv.y);
   displaced.x+=sin(t*.12)*3.0*cloud*uMotion/uResolution.x;
   // Water-only mask: the bridge, embankments and near rocks are never translated.
-  float depth=smoothstep(.785,1.,uv.y);
-  float leftBank=.25+.25*smoothstep(.78,1.,uv.y);
-  float water=smoothstep(.778,.798,uv.y)*smoothstep(leftBank,leftBank+.035,uv.x);
+  float waterTop=mix(.785,.74,uPortrait);
+  float depth=smoothstep(waterTop,1.,uv.y);
+  float leftBank=mix(.25+.25*smoothstep(.78,1.,uv.y),.24+.30*smoothstep(.82,1.,uv.y),uPortrait);
+  float water=smoothstep(waterTop-.007,waterTop+.013,uv.y)*smoothstep(leftBank,leftBank+.035,uv.x);
   float wave=sin(uv.y*180.+t*1.05)+.45*sin(uv.y*310.-t*.71+uv.x*8.);
   displaced.x+=wave*(.45+depth*2.8)*water*uMotion/uResolution.x;
   displaced.y+=sin(uv.x*38.+t*.72)*(.15+depth*.65)*water*uMotion/uResolution.y;
