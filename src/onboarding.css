@@ -28,3 +28,8 @@ html[data-page-hidden] .setup-panel::before{animation-play-state:paused}
 /* iOS: comfortable touch targets, no automatic input zoom, and space for the home indicator. */
 .onboarding-world button,.onboarding-world select,.format-option{touch-action:manipulation}
 @media(max-width:650px){.onboarding-layout{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:max(32px,env(safe-area-inset-bottom));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}.name-control input,.language-control select{font-size:16px}}
+
+/* One shared image preserves the title page's angular SAKYRA wordmark. */
+.studio-brand .sakyra-logo-image{display:block;width:100%;height:100%;object-fit:contain;position:relative;user-select:none}
+.studio-brand:not(.dashboard-logo){isolation:isolate;filter:drop-shadow(0 1px 1px #ffedf5b0)}
+.studio-brand:not(.dashboard-logo)::before{content:'';position:absolute;z-index:-1;left:10%;right:5%;bottom:12%;height:40%;background:#ffe4efb3;border-radius:50%;filter:blur(20px);pointer-events:none}

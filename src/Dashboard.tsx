@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {ArrowRight,Bell,ChartNoAxesColumnIncreasing,Check,ChevronDown,ChevronRight,Clapperboard,Download,Ellipsis,FileText,Film,Flower2,Folder,House,Layers,Menu,Mic,Monitor,Plus,Search,Settings,Smartphone,Sparkles,Trash2,Upload} from 'lucide-react';
-import {Blossom} from './StudioBrand';
+import StudioBrand,{Blossom} from './StudioBrand';
 import {readPreferences,preferencesStorageWarning} from './studio/preferences';
 import {examples,projectId,readProjects,saveProjects,type Project} from './studio/projects';
 import {studioCopy,type StudioCopy} from './studio/copy';
@@ -10,7 +10,7 @@ import './dashboard.css';
 type View='studio'|'projects'|'scripts'|'voice'|'video'|'export';
 const navigation=[{id:'studio',key:'home',icon:House},{id:'projects',key:'projects',icon:Folder},{id:'scripts',key:'scripts',icon:FileText},{id:'voice',key:'voice',icon:Mic},{id:'video',key:'video',icon:Film},{id:'export',key:'export',icon:Upload}] as const;
 function Landscape(){return <svg className="studio-landscape" viewBox="0 0 260 100" aria-hidden="true"><path d="m0 95 80-52 22 15 29-38 82 70 47-15v25H0" fill="currentColor" opacity=".23"/><path d="m107 48 24-29 29 29-15-7-10 5-7-9-10 10Z" fill="white" opacity=".5"/><path d="M156 48q40 9 80-5l-6 11q-31 9-70 3Zm5 18h70v7h-70m11-18-5 44h7l6-43m35-2 6 45h7l-5-47" fill="currentColor" opacity=".55"/></svg>}
-function StudioLogo(){return <div className="dashboard-logo"><Flower2 aria-hidden="true"/><span>SAKYRA</span></div>}
+function StudioLogo(){return <StudioBrand className="dashboard-logo"/>}
 function Cover({cover}:{cover:number}){return <span className={'project-cover cover-'+cover} aria-hidden="true"/>}
 function ProjectEditor({project,isExample,onSave,onClose,t}:{project:Project;isExample:boolean;onSave:(p:Project)=>void;onClose:()=>void;t:StudioCopy}){
  const [draft,setDraft]=useState(project),[error,setError]=useState(false);const name=useRef<HTMLInputElement>(null);
@@ -67,7 +67,7 @@ export default function Dashboard({view='studio'}:{view?:View}){
  return <main className={'dashboard-world '+(paused?'is-paused':'')} lang={prefs.language}>
   <div className="dashboard-background" aria-hidden="true"/><div className="room-petals" aria-hidden="true">{Array.from({length:9},(_,i)=><i key={i} style={{left:(7+i*11)+'%',animationDelay:(-i*2.8)+'s',animationDuration:(16+i%4*3)+'s'}}/>)}</div><div className="tea-steam" aria-hidden="true"><i/><i/><i/></div>
   <div className="dashboard-shell">
-   <aside className="studio-sidebar"><a href="#studio" className="brand-home" aria-label="SAKYRA"><StudioLogo/></a><Landscape/>{nav}<Blossom className="sidebar-blossom"/><span className="sidebar-edition">CREATIVE STUDIO</span></aside>
+   <aside className="studio-sidebar"><a href="#studio" className="brand-home" aria-label="SAKYRA"><StudioLogo/></a>{nav}<Blossom className="sidebar-blossom"/><span className="sidebar-edition">CREATIVE STUDIO</span></aside>
    <section className="dashboard-main" aria-label={t.home}>
     <header className="studio-header"><div className="mobile-studio-brand"><button className="icon-button" aria-label={t.menu} onClick={()=>setDrawer(true)}><Menu size={23}/></button><StudioLogo/></div><div className="studio-heading"><h1 ref={header} tabIndex={-1}>{view==='studio'?t.title:view==='projects'?t.projects:view==='scripts'?t.write:view==='voice'?t.voiceTitle:view==='video'?t.videoTitle:t.exportTitle}</h1><p>{view==='studio'?t.subtitle:view==='projects'?t.localNote:view==='scripts'?t.scriptSubtitle:''}</p></div>
      <div className="studio-toolbar" ref={popoverRef}><button className="icon-button notification-button" aria-label={t.notifications} aria-expanded={popover==='notifications'} onClick={()=>setPopover(popover==='notifications'?null:'notifications')}><Bell size={20}/></button><button className="studio-user" aria-label={t.profile} aria-expanded={popover==='profile'} onClick={()=>setPopover(popover==='profile'?null:'profile')}><span className="user-avatar"><Flower2 size={24}/></span><span>{prefs.name}</span><ChevronDown size={16}/></button>

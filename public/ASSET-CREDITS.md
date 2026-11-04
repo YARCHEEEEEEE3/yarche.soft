@@ -1,3 +1,7 @@
+# Shared SAKYRA logo
+
+- scene/sakyra-logo.png: transparent logo asset extracted with image generation from living-background.png. Preserves the title page’s black angular SAKYRA lettering, sun and cherry branch. Shared by onboarding, settings, desktop sidebar and mobile studio header through StudioBrand.tsx.
+
 # Added in SAKYRA studio dashboard (v7)
 
 - scene/dashboard-room.png: image-generation edit based on the user’s Japanese tea-room dashboard reference. All painted UI was removed; warm shoji room, cherry blossoms, lake/Fuji view, sleeping cat and desk accessories remain in the generated environment plate.

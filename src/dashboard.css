@@ -30,3 +30,8 @@
  .dashboard-main{position:relative;padding-bottom:30px}.studio-footer{position:absolute;bottom:9px;left:16px;right:16px;margin:0}
  .project-card-title{padding-right:49px}.project-state{float:right;margin-top:-22px;margin-bottom:0}.project-progress{clear:both}
 }
+
+/* The studio and onboarding use the same SAKYRA artwork as the title page. */
+.studio-sidebar .brand-home{display:block;width:100%;max-width:166px;margin-bottom:14px}
+.studio-sidebar .dashboard-logo{display:block;width:100%;height:100px;margin:-15px auto 0;filter:none}
+.mobile-studio-brand .dashboard-logo{display:block;width:clamp(110px,36vw,150px);height:52px;filter:none}
