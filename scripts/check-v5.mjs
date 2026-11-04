@@ -1,0 +1,11 @@
+import {readFile} from 'node:fs/promises';
+import {chromium,expect} from '@playwright/test';
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+const context=await browser.newContext({viewport:{width:1280,height:720},offline:true});const page=await context.newPage();const errors=[],network=[];
+page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))network.push(r.url())});
+await page.setContent(await readFile('/workspace/scratch/sakyra/SAKYRA-v5.html','utf8'));
+await expect(page.getByRole('heading',{name:'Налаштуй свою студію'})).toBeVisible();
+await page.locator('.onboarding-scenery img').evaluate(img=>img.decode());
+await page.getByLabel('Назва студії').fill('Моя SAKYRA');await page.getByRole('radio',{name:'9:16 Shorts'}).check();await page.getByRole('button',{name:'Увійти в студію'}).click();await expect(page.getByRole('heading',{name:'Твоя студія готова'})).toBeVisible();
+console.log({errors,network,background:await page.locator('.onboarding-scenery img').evaluate(img=>[img.naturalWidth,img.naturalHeight]),name:await page.locator('.studio-summary h2').textContent()});
+expect(errors).toEqual([]);expect(network).toEqual([]);await browser.close();

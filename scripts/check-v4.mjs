@@ -1,0 +1,11 @@
+import {readFile} from 'node:fs/promises';
+import {chromium} from '@playwright/test';
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox','--enable-unsafe-swiftshader']});
+const context=await browser.newContext({viewport:{width:1672,height:941},offline:true});const page=await context.newPage();const errors=[],network=[];
+page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))network.push(r.url())});
+await page.setContent(await readFile('/workspace/scratch/sakyra/SAKYRA-v4.html','utf8')); await page.waitForTimeout(1500);
+console.log(await page.evaluate(()=>({mode:document.querySelector('.living-scene')?.dataset.renderer,width:document.querySelector('img').naturalWidth,button:document.querySelector('button').disabled})));
+await page.screenshot({path:'/workspace/scratch/sakyra/SAKYRA-v4-motion.png'});
+await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(500);
+console.log(await page.evaluate(()=>{const c=document.querySelector('.reference-effects');return{reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,petalPixels:c.getContext('2d').getImageData(0,0,c.width,c.height).data.filter(v=>v!==0).length}}));
+console.log({errors,network});await browser.close();

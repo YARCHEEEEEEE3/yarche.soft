@@ -1,0 +1,21 @@
+@font-face{font-family:Manrope;src:url('/fonts/manrope.ttf') format('truetype');font-weight:200 800;font-display:swap}
+:root{font-family:Manrope,Arial,sans-serif;color:#211b2b;background:#f5e5ee;font-synthesis:none}
+*{box-sizing:border-box}html,body,#root{width:100%;height:100%;margin:0}body{overflow:hidden}button{font:inherit;cursor:pointer}
+.reference-world{position:relative;width:100%;height:100svh;display:grid;place-items:center;isolation:isolate}
+.reference-stage{position:relative;width:min(100vw,calc(100svh * 1672 / 941));aspect-ratio:1672/941;flex:none;container-type:inline-size}
+.reference-art{display:block;width:100%;height:100%;user-select:none;-webkit-user-drag:none}
+.living-scene,.living-scene canvas,.reference-effects{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.living-scene{z-index:1}.reference-effects{z-index:2}
+.login-target{position:absolute;z-index:3;left:37.32%;top:49.57%;width:25.36%;height:9.14%;display:grid;place-items:center}
+.reference-login{display:flex;align-items:center;justify-content:center;gap:1.7cqw;width:100%;height:100%;min-width:245px;min-height:50px;flex-shrink:0;border:1px solid #fff5;border-radius:999px;padding:0 2.7cqw;background:linear-gradient(180deg,#ffe6efb8,#fffafaed 75%);backdrop-filter:blur(18px) saturate(1.25);-webkit-backdrop-filter:blur(18px) saturate(1.25);color:#18121e;font-size:clamp(15px,1.57cqw,30px);font-weight:800;letter-spacing:-.04em;white-space:nowrap;box-shadow:inset 0 1px 2px #fff9,0 .7cqw 1.3cqw #f7529652,0 0 2.5cqw #ff76ab45;transition:transform .25s ease,box-shadow .25s ease,background .25s ease;-webkit-tap-highlight-color:transparent}
+.reference-login>svg:first-child{width:clamp(27px,2.65cqw,48px);height:auto;flex-shrink:0}
+.reference-login .login-arrow{width:clamp(23px,1.9cqw,36px);height:auto;flex-shrink:0}
+.reference-login:hover{transform:translateY(-2px) scale(1.015);box-shadow:inset 0 1px 3px #fffd,0 1cqw 2cqw #ed519967,0 0 3cqw #ff76ab52}
+.reference-login:active{transform:scale(.98)}.reference-login:focus-visible{outline:3px solid #8a3e6c;outline-offset:5px}.reference-login:disabled{cursor:wait}
+.login-spinner{width:24px;height:24px;border:2px solid #b65a8730;border-top-color:#b65a87;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-message{position:absolute;top:62%;left:50%;transform:translateX(-50%);width:min(420px,80vw);margin:0;padding:12px 18px;border-radius:16px;background:#fff8f6f2;color:#70455f;font-size:13px;line-height:1.6;text-align:center;box-shadow:0 5px 25px #814e6b20;visibility:hidden;z-index:5}.auth-message.visible{visibility:visible}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.workspace-entry{position:fixed;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);width:min(480px,90vw);padding:26px;border:1px solid #fff;border-radius:24px;background:#fff7f7f5;box-shadow:0 18px 70px #56374b30}.workspace-entry h2{font-size:23px}.workspace-entry p{font-size:13px;line-height:1.7}.workspace-entry button{border:1px solid #e7b2cc;border-radius:20px;background:white;padding:9px 24px;color:#81425f}.workspace-entry button:focus-visible{outline:3px solid #8a3e6c;outline-offset:3px}
+@media(max-width:600px){.reference-login{gap:16px;padding:0 20px;position:absolute;left:50%;transform:translateX(-50%)}.reference-login:hover{transform:translateX(-50%) translateY(-2px)}.reference-login:active{transform:translateX(-50%) scale(.98)}.auth-message{top:78%;font-size:12px;padding:10px 14px}}
+@media(prefers-reduced-motion:reduce){.reference-effects{visibility:hidden}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
