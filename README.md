@@ -119,3 +119,15 @@ Validation: `npx playwright test tests/script.spec.ts tests/dashboard.spec.ts` c
 Preview uses the browser's Web Speech API when a matching Ukrainian or English device voice exists. The UI identifies this as a device preview, animates playback only after speech actually starts, and stops speech on settings changes, navigation and tab hiding. Unsupported browsers or unavailable languages show a clear explanation. Profiles are design presets, not six connected AI voices; generation opens a test dialog and does not claim to create an audio file.
 
 Validation: `npx playwright test tests/voice.spec.ts` covers filters, persistence, duration estimates, mocked speech lifecycle, unavailable voices, honest generation state, and desktop/mobile layouts. Actual voice availability and sound depend on the user's browser and installed system voices.
+
+### Video storyboard demo
+
+`#video` implements a saved, approval-gated workflow: create demo characters → review names/descriptions and approve → review the scene plan → approve and prepare photos → optionally run individual, selected or batch animation tests. A persistent demo label distinguishes prepared artwork and simulated jobs from AI generation. Animation tests produce no video file.
+
+Duration options range from 30 seconds to 30 minutes, with 4/6/8-second scenes. The count is `ceil(duration / sceneLength)` and the final scene is shortened to match the exact total. Long projects render at most 12 large scene cards per page. Scene detail dialogs edit character, location, shot and prompt. Editing a prepared frame clears only its photo/animation status and requires scene approval again. Configuration changes after review require an explicit restart confirmation.
+
+Six visual style references are available in a gallery. The selected style is saved for a future generation integration; this demo continues to show prepared anime scenes, which repeat in longer projects. Character edits affect generated demo plan text. Script excerpts are copied into scene prompts with a length cap; the original script is unchanged.
+
+State lives in `project.video` (included in JSON export), or a separate browser draft when no project is selected. Timed demo jobs clean up on navigation; partial photo and animation results persist, and photo preparation can resume. No network generation requests are made. Storage errors are surfaced.
+
+Validation: `npx playwright test tests/video.spec.ts tests/script.spec.ts tests/voice.spec.ts tests/dashboard.spec.ts`. Video checks cover approvals, per-frame/batch animation, reloads, project isolation, resumable jobs, style selection, 20-minute scene counts, final scene duration, editing invalidation, pagination, and mobile layouts.

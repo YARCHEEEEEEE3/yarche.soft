@@ -33,3 +33,7 @@ Earlier scene assets are retained in source backups under /workspace/scratch/sak
 ## Voice profile avatars
 
 `scene/voice-avatars.png` is an original six-portrait sprite sheet generated for the SAKYRA voice interface. The illustrated people are fictional demo profiles, not recordings or identities of real voice actors. Browser previews use available device voices.
+
+## Video storyboard demo
+
+`scene/video-characters.png`, `scene/video-scenes.png`, and `scene/video-styles.png` are original generated illustrations created for SAKYRA's video workflow demo. They depict fictional Roman-era characters and locations. The scene and style sprites have six panels; the character sprite has three. The interface uses these prepared assets to demonstrate approval, photo preparation and animation states; it does not call a generative model at runtime or produce video clips. Style thumbnails are visual references for future generation.
