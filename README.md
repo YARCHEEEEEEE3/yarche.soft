@@ -111,3 +111,11 @@ The `#scripts` tab is a responsive, local-first editor in the studio's pink glas
 UTF-8 `.txt` imports create a new project without overwriting the current draft. Files are limited to 100 KB and scripts to 20,000 characters; invalid encoding and oversized input are rejected. “Generate script / Test” opens an explicitly labelled local template builder, not an AI API. Voice generation remains a preview.
 
 Validation: `npx playwright test tests/script.spec.ts tests/dashboard.spec.ts` covers persistence, project selection, imports, preservation of drafts, templates, clearing and mobile layouts.
+
+### Voice workspace
+
+`#voice` contains six illustrated demo profiles, language/gender/age/mood filters, editable preview text, speed and pitch controls, a script-based duration estimate, and navigation to video. Voice preferences are saved with the selected project; a separate local draft supports trying the page without a project.
+
+Preview uses the browser's Web Speech API when a matching Ukrainian or English device voice exists. The UI identifies this as a device preview, animates playback only after speech actually starts, and stops speech on settings changes, navigation and tab hiding. Unsupported browsers or unavailable languages show a clear explanation. Profiles are design presets, not six connected AI voices; generation opens a test dialog and does not claim to create an audio file.
+
+Validation: `npx playwright test tests/voice.spec.ts` covers filters, persistence, duration estimates, mocked speech lifecycle, unavailable voices, honest generation state, and desktop/mobile layouts. Actual voice availability and sound depend on the user's browser and installed system voices.

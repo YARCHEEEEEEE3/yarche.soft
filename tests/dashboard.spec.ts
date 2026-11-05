@@ -27,7 +27,7 @@ test('example copy creates a draft and dialog supports validation and Escape',as
 test('iPhone dashboard and navigation drawer remain usable',async({page})=>{
  await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/#studio');await expect(page.getByRole('button',{name:'Новий проєкт'})).toBeInViewport();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);await page.screenshot({path:'/workspace/scratch/sakyra/SAKYRA-v7-mobile.png',fullPage:true});
- await page.getByRole('button',{name:'Відкрити меню'}).click();await page.getByRole('dialog').getByRole('link',{name:'Озвучка',exact:true}).click();await expect(page.getByRole('heading',{name:'Голос твоєї історії'})).toBeVisible();await expect(page.getByRole('dialog')).not.toBeVisible();
+ await page.getByRole('button',{name:'Відкрити меню'}).click();await page.getByRole('dialog').getByRole('link',{name:'Озвучка',exact:true}).click();await expect(page.getByRole('heading',{name:'Озвучка'})).toBeVisible();await expect(page.getByRole('dialog')).not.toBeVisible();
  await page.getByRole('button',{name:'Меню студії'}).click();await page.getByRole('link',{name:'Налаштування',exact:true}).filter({visible:true}).click();await expect(page.getByLabel('Назва студії')).toBeVisible();
 });
 

@@ -1,4 +1,5 @@
-export type Project={id:string;name:string;idea:string;script:string;format:'16:9'|'9:16';cover:0|1|2;createdAt:string;updatedAt:string};
+import type {VoiceSettings} from './voiceModel';
+export type Project={id:string;name:string;idea:string;script:string;format:'16:9'|'9:16';cover:0|1|2;createdAt:string;updatedAt:string;voice?:VoiceSettings};
 const KEY='sakyra.studio.projects.v1';
 let memory:Project[]|null=null;
 export function readProjects():Project[]{

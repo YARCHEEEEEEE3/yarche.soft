@@ -29,3 +29,7 @@
 - Manrope: SIL Open Font License; fonts/OFL.txt.
 
 Earlier scene assets are retained in source backups under /workspace/scratch/sakyra/.
+
+## Voice profile avatars
+
+`scene/voice-avatars.png` is an original six-portrait sprite sheet generated for the SAKYRA voice interface. The illustrated people are fictional demo profiles, not recordings or identities of real voice actors. Browser previews use available device voices.
