@@ -6,11 +6,11 @@ export const voiceProfiles=[
  {id:'taras',uk:'Тарас',en:'Taras',gender:'male',age:'mature',mood:'serious',avatar:4,pitch:.84},
  {id:'olena',uk:'Олена',en:'Olena',gender:'female',age:'adult',mood:'confident',avatar:5,pitch:1.02},
 ] as const;
-export type VoiceSettings={profile:string;language:'uk'|'en';rate:number;tone:number;preview:string;deviceVoice:string};
+export type VoiceSettings={profile:string;language:'uk'|'en';rate:number;tone:number;preview:string;deviceVoice:string;fishVoice?:{id:string;title:string};fishSpeed?:number};
 export const previewText={uk:'Вітаю! Це приклад голосу для твоєї історії. Разом перетворимо слова на відео, яке хочеться дивитися.',en:'Hello! This is a voice preview for your story. Together, we can turn words into a video worth watching.'};
 export function normalizeVoice(value:unknown,language:'uk'|'en'='uk'):VoiceSettings{
  const v=(value&&typeof value==='object'?value:{}) as Partial<VoiceSettings>;
- return {profile:voiceProfiles.some(p=>p.id===v.profile)?v.profile!:'oleksii',language:v.language==='uk'||v.language==='en'?v.language:language,rate:typeof v.rate==='number'&&Number.isFinite(v.rate)?Math.min(1.5,Math.max(.5,v.rate)):1,tone:typeof v.tone==='number'&&Number.isFinite(v.tone)?Math.min(4,Math.max(-4,Math.round(v.tone))):0,preview:typeof v.preview==='string'?v.preview.slice(0,200):previewText[language],deviceVoice:typeof v.deviceVoice==='string'?v.deviceVoice:''};
+ return {...(v.fishVoice&&typeof v.fishVoice.id==='string'&&/^[a-zA-Z0-9_-]{1,128}$/.test(v.fishVoice.id)&&typeof v.fishVoice.title==='string'?{fishVoice:{id:v.fishVoice.id,title:v.fishVoice.title.slice(0,200)}}:{}),fishSpeed:typeof v.fishSpeed==='number'&&Number.isFinite(v.fishSpeed)?Math.min(2,Math.max(.5,v.fishSpeed)):1,profile:voiceProfiles.some(p=>p.id===v.profile)?v.profile!:'oleksii',language:v.language==='uk'||v.language==='en'?v.language:language,rate:typeof v.rate==='number'&&Number.isFinite(v.rate)?Math.min(1.5,Math.max(.5,v.rate)):1,tone:typeof v.tone==='number'&&Number.isFinite(v.tone)?Math.min(4,Math.max(-4,Math.round(v.tone))):0,preview:typeof v.preview==='string'?v.preview.slice(0,200):previewText[language],deviceVoice:typeof v.deviceVoice==='string'?v.deviceVoice:''};
 }
 let draft:VoiceSettings|undefined;
 export function readVoiceDraft(language:'uk'|'en'){try{return normalizeVoice(draft||JSON.parse(localStorage.getItem('sakyra.voice.draft.v1')||'null'),language);}catch{return normalizeVoice(draft,language);}}

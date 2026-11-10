@@ -9,9 +9,14 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "playwright test",
     "export:demo": "npm run build && node scripts/export-demo.mjs",
-    "build:pages": "tsc -b && vite build --base=./ --outDir docs && node scripts/prepare-pages.mjs"
+    "build:pages": "tsc -b && vite build --base=./ --outDir docs && node scripts/prepare-pages.mjs",
+    "dev:api": "node --use-env-proxy --env-file-if-exists=.env.server server/index.mjs",
+    "start:api": "node --use-env-proxy --env-file-if-exists=.env.server server/index.mjs",
+    "test:api": "node --test server/tests/*.test.mjs",
+    "test:fish:live": "node --use-env-proxy --env-file-if-exists=.env.server scripts/test-fish-live.mjs"
   },
   "dependencies": {
+    "@msgpack/msgpack": "^3.1.3",
     "@supabase/supabase-js": "^2.90.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
@@ -24,5 +29,8 @@
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "~5.7.2",
     "vite": "^6.1.0"
+  },
+  "engines": {
+    "node": ">=24.5.0"
   }
 }

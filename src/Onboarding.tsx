@@ -2,6 +2,7 @@ import {useRef,useState} from 'react';
 import {ArrowRight,Box,Clapperboard,ChevronDown,Globe2,Info,Monitor,Pencil,Smartphone,Sparkles} from 'lucide-react';
 import StudioBrand,{Blossom} from './StudioBrand';
 import OnboardingAtmosphere from './OnboardingAtmosphere';
+import FishSettings from './fish/FishSettings';
 
 import {readPreferences,savePreferences,type Preferences} from './studio/preferences';
 
@@ -34,6 +35,7 @@ export default function Onboarding({editing=false}:{editing?:boolean}){
             </div>
             <button type="submit" className="enter-studio"><span>{editing?(prefs.language==='uk'?'Зберегти налаштування':'Save preferences'):t.enter}</span><ArrowRight size={25}/><Blossom className="button-blossom"/></button>
           </form>
+          {editing&&<FishSettings language={prefs.language}/>}
           <p className="setup-footnote"><Info size={16}/><span>{t.note}</span></p>
         <a className="back-to-login" href={editing?'#studio':'#login'}>{editing?(prefs.language==='uk'?'До студії':'Back to studio'):t.back}<ArrowRight size={15}/></a>
       </section>
