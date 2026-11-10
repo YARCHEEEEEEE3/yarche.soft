@@ -33,3 +33,4 @@
  .preview-caption{top:calc(46% + 74px);font-size:11px;max-width:90%;text-align:center}
  .auth-message{top:calc(46% + 104px)}
 }
+.auth-message>p{margin:0}.auth-message:has(.auth-diagnostic){max-height:32svh;overflow:auto;overscroll-behavior:contain}.auth-diagnostic{display:grid;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid #e5bfd4}.auth-diagnostic code{font-size:10px;line-height:1.5;overflow-wrap:anywhere;user-select:all}.auth-diagnostic button{display:flex;justify-content:center;align-items:center;gap:7px;min-height:42px;padding:9px;border:1px solid #ddb0c9;border-radius:10px;color:#804565;background:#fff8fc;font-size:12px}.auth-diagnostic button:focus-visible{outline:2px solid #8a3e6c;outline-offset:2px}.auth-diagnostic small{font-size:10px;line-height:1.5;color:#98768b}
