@@ -8,3 +8,5 @@ test-results/
 artifacts/
 .data/
 !.env.server.example
+# Only public Vite configuration; server secrets stay ignored.
+!.env.production
