@@ -1,11 +1,13 @@
 import {useEffect,useRef,useState} from 'react';
 import {ArrowRight,Check,ChevronDown,ChevronRight,FilePlus2,FileText,Film,Flower2,Mic,Sparkles,Trash2,Upload} from 'lucide-react';
+import PlanWorkspace from '../brain/PlanWorkspace';
+import type {ProjectPlan} from '../brain/api';
 import type {Project} from './projects';
 import Dialog from './Dialog';
 import {scriptCopy,scriptTemplate} from './scriptCopy';
 import './script.css';
 
-export default function ScriptWorkspace({language,projects,selected,onSelect,onChange,onNew,storageWarning}:{language:'uk'|'en';projects:Project[];selected?:Project;onSelect:(id:string)=>void;onChange:(text:string)=>void;onNew:(text?:string,name?:string)=>void;storageWarning:boolean}){
+export default function ScriptWorkspace({language,projects,selected,onSelect,onChange,onNew,onPlanChange,storageWarning}:{language:'uk'|'en';projects:Project[];selected?:Project;onSelect:(id:string)=>void;onChange:(text:string)=>void;onNew:(text?:string,name?:string)=>void;onPlanChange:(plan:ProjectPlan)=>void;storageWarning:boolean}){
  const t=scriptCopy[language],text=selected?.script||'';
  const [dialog,setDialog]=useState<'template'|'clear'|null>(null),[topic,setTopic]=useState(''),[error,setError]=useState(''),[reading,setReading]=useState(false);
  const editor=useRef<HTMLTextAreaElement>(null),fileInput=useRef<HTMLInputElement>(null),alive=useRef(true),revision=useRef(0);
@@ -40,6 +42,7 @@ export default function ScriptWorkspace({language,projects,selected,onSelect,onC
   </div>
   {error&&<p className="script-file-error" role="alert">{error}</p>}
   <div className="script-tools"><div className="script-file-actions"><input ref={fileInput} type="file" accept=".txt,text/plain" hidden onChange={e=>{void importText(e.target.files?.[0]);e.target.value='';}}/><button className="studio-secondary" disabled={reading} onClick={()=>fileInput.current?.click()}><Upload size={19}/>{reading?t.reading:t.upload}</button><button className="studio-secondary" disabled={reading} onClick={()=>{onNew();editor.current?.focus();}}><FilePlus2 size={19}/>{t.new}</button></div><div className="script-counts"><span>{t.words}: <strong>{words.toLocaleString(language)}</strong></span><span>{t.characters}: <strong>{text.length.toLocaleString(language)}</strong></span></div><button className="script-clear icon-button" disabled={!text||reading} aria-label={t.clear} title={t.clear} onClick={()=>setDialog('clear')}><Trash2 size={21}/></button></div>
+  {selected&&<PlanWorkspace key={JSON.stringify([selected.id,selected.script])} project={selected} language={language} onChange={onPlanChange}/>}
   <div className="script-next"><span>{text.trim()?t.nextReady:t.nextHint}</span><button className="script-next-button" disabled={!text.trim()||reading} onClick={()=>{location.hash='voice';}}>{t.next}<ArrowRight size={23}/></button></div>
   {dialog==='clear'&&<Dialog title={t.clearTitle} closeLabel={t.close} onClose={()=>setDialog(null)}><p>{t.clearText}</p><div className="dialog-actions"><button className="studio-secondary" onClick={()=>setDialog(null)}>{t.cancel}</button><button className="studio-primary" onClick={()=>{onChange('');setDialog(null);}}>{t.clear}</button></div></Dialog>}
   {dialog==='template'&&<Dialog title={t.demoTitle} closeLabel={t.close} onClose={()=>setDialog(null)}><p className="script-template-notice"><Sparkles size={19}/>{t.demoText}</p><form className="project-form" onSubmit={e=>{e.preventDefault();if(!topic.trim())return;onNew(scriptTemplate(topic.trim(),language),topic.trim());setDialog(null);}}><label>{t.topic}<input required maxLength={80} placeholder={t.topicPlaceholder} value={topic} onChange={e=>setTopic(e.target.value)}/></label><p className="script-template-hint">{t.separate}</p><div className="dialog-actions"><button className="studio-secondary" type="button" onClick={()=>setDialog(null)}>{t.cancel}</button><button className="studio-primary" type="submit"><Sparkles size={17}/>{t.template}</button></div></form></Dialog>}

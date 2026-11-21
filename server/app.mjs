@@ -1,12 +1,12 @@
 import { createServer } from 'node:http';
 import { ApiError, MAX_TEXT, MODEL } from './fish.mjs';
 
-async function jsonBody(req) {
+async function jsonBody(req, maxBytes = 65_536) {
   if (!/^application\/json(;|$)/i.test(req.headers['content-type'] || '')) throw new ApiError(415, 'JSON_REQUIRED');
   const parts = []; let length = 0;
   for await (const chunk of req) {
     length += chunk.length;
-    if (length > 65_536) throw new ApiError(413, 'REQUEST_TOO_LARGE');
+    if (length > maxBytes) throw new ApiError(413, 'REQUEST_TOO_LARGE');
     parts.push(chunk);
   }
   try { const value = JSON.parse(Buffer.concat(parts).toString()); if (!value || Array.isArray(value) || typeof value !== 'object') throw Error(); return value; }
@@ -14,7 +14,7 @@ async function jsonBody(req) {
 }
 
 // Dependencies are injected for tests; the production entry point always verifies Supabase tokens.
-export function createApiServer({ authenticate, vault, fish, origins = [], ready = true }) {
+export function createApiServer({ authenticate, vault, fish, openaiVault, openai, origins = [], ready = true }) {
   const active = new Set(), limits = new Map();
   return createServer({ requestTimeout: 30_000, headersTimeout: 15_000 }, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -33,15 +33,41 @@ export function createApiServer({ authenticate, vault, fish, origins = [], ready
       }
       const url = new URL(req.url, 'http://localhost');
       if (url.pathname === '/api/health' && req.method === 'GET') return json(ready ? 200 : 503, { ready, model: MODEL });
-      if (!['/api/fish/key', '/api/fish/voices', '/api/fish/tts'].includes(url.pathname)) throw new ApiError(404, 'NOT_FOUND');
+      const openAIPath = ['/api/openai/key', '/api/openai/plan'].includes(url.pathname);
+      if (!openAIPath && !['/api/fish/key', '/api/fish/voices', '/api/fish/tts'].includes(url.pathname)) throw new ApiError(404, 'NOT_FOUND');
       const user = await authenticate(req);
-      if (!ready) throw new ApiError(503, 'SERVER_NOT_CONFIGURED');
+      if (openAIPath ? !openaiVault || !openai : !ready) throw new ApiError(503, 'SERVER_NOT_CONFIGURED');
+      const limitId = openAIPath ? 'openai:' + user : user;
       const now = Date.now();
       // Expire buckets on every authenticated request to bound memory without timers.
       for (const [id, bucket] of limits) if (bucket.until < now) limits.delete(id);
-      const bucket = limits.get(user) || { count: 0, until: now + 60_000 };
+      const bucket = limits.get(limitId) || { count: 0, until: now + 60_000 };
       if (++bucket.count > 40) throw new ApiError(429, 'RATE_LIMIT');
-      limits.set(user, bucket);
+      limits.set(limitId, bucket);
+      if (openAIPath) {
+        const keyRoute = url.pathname === '/api/openai/key';
+        if (keyRoute && req.method === 'GET') return json(200, { configured: !!await openaiVault.get(user) });
+        if (!(keyRoute ? ['PUT', 'DELETE'] : ['POST']).includes(req.method)) throw new ApiError(405, 'METHOD_NOT_ALLOWED');
+        const operation = limitId;
+        if (active.has(operation)) throw new ApiError(409, 'REQUEST_IN_PROGRESS');
+        active.add(operation);
+        try {
+          if (keyRoute && req.method === 'DELETE') {
+            await openaiVault.remove(user);
+            return json(200, { configured: false });
+          }
+          const body = await jsonBody(req, keyRoute ? 65_536 : 128_000);
+          if (keyRoute) {
+            const key = typeof body.key === 'string' ? body.key.trim() : '';
+            if (!/^sk-[A-Za-z0-9_-]{10,509}$/.test(key)) throw new ApiError(400, 'OPENAI_INVALID_KEY');
+            await openaiVault.put(user, key);
+            return json(200, { configured: true });
+          }
+          const key = await openaiVault.get(user);
+          if (!key) throw new ApiError(409, 'OPENAI_KEY_REQUIRED');
+          return json(200, await openai.analyze(key, body, abort.signal));
+        } finally { active.delete(operation); }
+      }
       if (url.pathname === '/api/fish/key') {
         if (req.method === 'GET') return json(200, { configured: !!await vault.get(user), model: MODEL, maxText: MAX_TEXT });
         if (!['PUT', 'DELETE'].includes(req.method)) throw new ApiError(405, 'METHOD_NOT_ALLOWED');

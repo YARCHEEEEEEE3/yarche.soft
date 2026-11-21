@@ -2,9 +2,9 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:
 import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export function createVault(directory, secret) {
+export function createVault(directory, secret, setting = 'FISH_KEY_ENCRYPTION_KEY') {
   const master = Buffer.from(secret || '', 'base64');
-  if (master.length !== 32) throw new Error('FISH_KEY_ENCRYPTION_KEY must be a base64-encoded 32-byte key');
+  if (master.length !== 32) throw new Error(`${setting} must be a base64-encoded 32-byte key`);
   const file = user => join(directory, createHash('sha256').update(user).digest('hex') + '.json');
   return {
     async get(user) {

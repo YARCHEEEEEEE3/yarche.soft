@@ -2,14 +2,19 @@ import { resolve } from 'node:path';
 import { createApiServer } from './app.mjs';
 import { createAuthenticate } from './auth.mjs';
 import { createVault } from './vault.mjs';
+import { createOpenAIClient } from './openai.mjs';
 import { createFishClient } from './fish.mjs';
 
 const env = process.env;
 const ready = !!(env.SUPABASE_URL && env.SUPABASE_PUBLISHABLE_KEY && env.FISH_KEY_ENCRYPTION_KEY);
 const vault = env.FISH_KEY_ENCRYPTION_KEY ? createVault(resolve(env.FISH_KEY_STORE || '.data/fish-keys'), env.FISH_KEY_ENCRYPTION_KEY) : null;
+const openaiVault = env.OPENAI_KEY_ENCRYPTION_KEY
+  ? createVault(resolve(env.OPENAI_KEY_STORE || '.data/openai-keys'), env.OPENAI_KEY_ENCRYPTION_KEY, 'OPENAI_KEY_ENCRYPTION_KEY')
+  : null;
 const origins = (env.FRONTEND_ORIGINS || 'http://localhost:5173,http://127.0.0.1:5173').split(',').map(s => s.trim()).filter(Boolean);
 const server = createApiServer({
-  ready, vault, origins,
+  ready, vault, origins, openaiVault,
+  openai: createOpenAIClient({ model: env.OPENAI_MODEL || undefined }),
   authenticate: createAuthenticate({ url: env.SUPABASE_URL, publicKey: env.SUPABASE_PUBLISHABLE_KEY }),
   fish: createFishClient(),
 });

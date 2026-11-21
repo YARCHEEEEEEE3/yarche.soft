@@ -21,8 +21,8 @@ test('settings show failed verification and unavailable API honestly on mobile',
  await page.setViewportSize({width:390,height:844});
  await page.route('**/api/fish/key',async route=>{await route.fulfill(route.request().method()==='PUT'?{status:422,json:{code:'FISH_KEY_INVALID'}}:{json:{configured:false}});});
  await page.goto('/#settings');await page.locator('#fish-api-key').fill('fake-invalid-secret');await page.getByRole('button',{name:'Перевірити й зберегти'}).click();
- await expect(page.getByRole('alert')).toContainText('Fish Audio не прийняв ключ');await expect(page.locator('#fish-api-key')).toHaveValue('');
+ await expect(page.getByRole('region',{name:'Fish Audio'}).getByRole('alert')).toContainText('Fish Audio не прийняв ключ');await expect(page.locator('#fish-api-key')).toHaveValue('');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(390);
  await page.route('**/api/fish/key',route=>route.fulfill({status:503,json:{code:'AUTH_NOT_CONFIGURED'}}));
- await page.reload();await expect(page.getByRole('alert')).toContainText('Supabase');await expect(page.locator('#fish-api-key')).toBeDisabled();
+ await page.reload();await expect(page.getByRole('region',{name:'Fish Audio'}).getByRole('alert')).toContainText('Supabase');await expect(page.locator('#fish-api-key')).toBeDisabled();
 });

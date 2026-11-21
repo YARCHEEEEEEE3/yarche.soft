@@ -7,12 +7,13 @@ import { randomBytes } from 'node:crypto';
 import { decode } from '@msgpack/msgpack';
 import { createApiServer } from '../app.mjs';
 import { createAuthenticate } from '../auth.mjs';
+import { createOpenAIClient } from '../openai.mjs';
 import { createVault } from '../vault.mjs';
 import { createFishClient, ApiError, MODEL } from '../fish.mjs';
 
 const mp3 = Buffer.concat([Buffer.from('ID3'), Buffer.alloc(40)]);
 const voice = { _id: 'voice_123', title: 'Test voice', type: 'tts', state: 'trained', languages: ['uk'] };
-async function fixture(t, upstream) {
+async function fixture(t, upstream, openaiFetcher) {
   const directory = await mkdtemp(join(tmpdir(), 'sakyra-api-'));
   const vault = createVault(directory, randomBytes(32).toString('base64'));
   const calls = [];
@@ -26,10 +27,12 @@ async function fixture(t, upstream) {
     if (options.headers.Authorization === 'Bearer ' + 'b'.repeat(30)) return Response.json({ id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' });
     return new Response(null, { status: 401 });
   }});
-  const server = createApiServer({ authenticate, vault, fish, origins: ['http://localhost:5173'] });
+  const openaiVault = createVault(join(directory, 'openai'), randomBytes(32).toString('base64'));
+  const openai = createOpenAIClient({ fetcher: openaiFetcher });
+  const server = createApiServer({ authenticate, vault, fish, openaiVault, openai, origins: ['http://localhost:5173'] });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   t.after(async () => { await new Promise(resolve => server.close(resolve)); await rm(directory, { recursive: true, force: true }); });
-  const request = (path, options = {}, user = 'a') => fetch(`http://127.0.0.1:${server.address().port}/api/fish/${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...(user ? { Authorization: 'Bearer ' + user.repeat(30) } : {}), ...options.headers } });
+  const request = (path, options = {}, user = 'a', service = 'fish') => fetch(`http://127.0.0.1:${server.address().port}/api/${service}/${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...(user ? { Authorization: 'Bearer ' + user.repeat(30) } : {}), ...options.headers } });
   return { request, vault, directory, calls };
 }
 
@@ -117,4 +120,39 @@ test('timeout, malformed audio and missing backend configuration fail clearly', 
   const bad = createFishClient({ fetcher: async () => new Response('not audio', { headers: { 'content-type': 'audio/mpeg' } }) });
   await assert.rejects(bad.tts('test', { text: 'Hi', voiceId: 'ok' }), error => error.code === 'FISH_INVALID_AUDIO');
   await assert.rejects(createAuthenticate({})({ headers: {} }), error => error instanceof ApiError && error.code === 'AUTH_NOT_CONFIGURED');
+});
+
+test('OpenAI keys are isolated and analysis validates structured responses without leaking upstream errors', async t => {
+  const key = 'sk-fake-openai-private-key', script = 'Акі йде в сад.';
+  const plan = { characters: [{ name: 'Акі', description: 'Героїня' }], locations: [], shots: [{ description: 'Акі йде.', durationSeconds: 4 }] };
+  let result = plan, upstreamStatus = 200, calls = 0;
+  const { directory, request } = await fixture(t, undefined, async (url, options) => {
+    calls++;
+    assert.equal(url, 'https://api.openai.com/v1/responses');
+    assert.equal(options.headers.Authorization, 'Bearer ' + key);
+    const payload = JSON.parse(options.body);
+    assert.equal(payload.input, script);
+    assert.equal(payload.store, false);
+    assert.equal(payload.text.format.strict, true);
+    if (upstreamStatus !== 200) return new Response(key, { status: upstreamStatus });
+    return Response.json({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(result) }] }] });
+  });
+  const openai = (path, options, user) => request(path, options, user, 'openai');
+  const post = body => ({ method: 'POST', body: JSON.stringify(body) });
+  assert.equal((await openai('key', {}, '')).status, 401);
+  assert.deepEqual(await (await openai('key', { method: 'PUT', body: JSON.stringify({ key }) })).json(), { configured: true });
+  assert.deepEqual(await (await openai('key')).json(), { configured: true });
+  assert.deepEqual(await (await openai('key', {}, 'b')).json(), { configured: false });
+  assert.equal((await (await request('key')).json()).configured, false);
+  const folder = join(directory, 'openai'), [file] = await readdir(folder);
+  assert.ok(!(await readFile(join(folder, file), 'utf8')).includes(key));
+  assert.equal((await openai('plan', post({ script, language: 'uk' }), 'b')).status, 409);
+  assert.equal((await openai('plan', post({ script: ' ', language: 'uk' }))).status, 400);
+  assert.equal(calls, 0);
+  assert.deepEqual(await (await openai('plan', post({ script, language: 'uk' }))).json(), plan);
+  result = { ...plan, shots: [{ description: 'Broken', durationSeconds: -1 }] };
+  assert.deepEqual(await (await openai('plan', post({ script, language: 'uk' }))).json(), { code: 'OPENAI_INVALID_PLAN' });
+  upstreamStatus = 401;
+  assert.deepEqual(await (await openai('plan', post({ script, language: 'uk' }))).json(), { code: 'OPENAI_KEY_REJECTED' });
+  assert.deepEqual(await (await openai('key', { method: 'DELETE' })).json(), { configured: false });
 });

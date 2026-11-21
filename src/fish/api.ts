@@ -1,40 +1,16 @@
-import {auth} from '../auth';
+import {ApiError as FishError,apiJson,apiRequest} from '../apiClient';
+export {FishError};
 
 export type FishVoice={id:string;title:string;description:string;languages:string[];tags:string[]};
 export type VoiceList={items:FishVoice[];total:number;page:number};
 export type KeyStatus={configured:boolean;model:string;maxText:number};
-export class FishError extends Error {constructor(public code:string){super(code);}}
-const base=(import.meta.env.VITE_API_BASE_URL||'').replace(/\/$/,'');
-async function request(path:string,options:RequestInit={}){
- const target=new URL(base||location.origin,location.origin);
- const loopback=['localhost','127.0.0.1'];
- if(target.protocol!=='https:'&&!(target.protocol==='http:'&&loopback.includes(target.hostname)&&loopback.includes(location.hostname)))throw new FishError('HTTPS_REQUIRED');
- // The API independently verifies this token. No Fish key is used for browser TTS requests.
- const session=auth?await auth.auth.getSession():null;
- const token=session?.data.session?.access_token;
- let response:Response;
- try{
-  response=await fetch(`${base}/api/fish/${path}`,{...options,cache:'no-store',credentials:'omit',redirect:'error',headers:{...(options.body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});
- }catch(error){if(options.signal?.aborted)throw error;throw new FishError('SERVER_UNAVAILABLE');}
- if(!response.ok){
-  let code='SERVER_UNAVAILABLE';
-  try{const body=await response.json();if(typeof body.code==='string')code=body.code;}catch{/* A static host can return an HTML 404. */}
-  throw new FishError(code);
- }
- return response;
-}
-async function json<T>(path:string,options:RequestInit={}):Promise<T>{
- const response=await request(path,options);
- if(!response.headers.get('content-type')?.includes('application/json'))throw new FishError('SERVER_UNAVAILABLE');
- return response.json();
-}
 export const fishApi={
- status:(signal?:AbortSignal)=>json<KeyStatus>('key',{signal}),
- saveKey:(key:string,signal?:AbortSignal)=>json<{configured:boolean}>('key',{method:'PUT',body:JSON.stringify({key}),signal}),
- removeKey:(signal?:AbortSignal)=>json<{configured:boolean}>('key',{method:'DELETE',signal}),
- voices:(page:number,query:string,own:boolean,signal?:AbortSignal)=>json<VoiceList>(`voices?${new URLSearchParams({page:String(page),q:query,own:String(own)})}`,{signal}),
+ status:(signal?:AbortSignal)=>apiJson<KeyStatus>('fish/key',{signal}),
+ saveKey:(key:string,signal?:AbortSignal)=>apiJson<{configured:boolean}>('fish/key',{method:'PUT',body:JSON.stringify({key}),signal}),
+ removeKey:(signal?:AbortSignal)=>apiJson<{configured:boolean}>('fish/key',{method:'DELETE',signal}),
+ voices:(page:number,query:string,own:boolean,signal?:AbortSignal)=>apiJson<VoiceList>(`fish/voices?${new URLSearchParams({page:String(page),q:query,own:String(own)})}`,{signal}),
  async generate(input:{text:string;voiceId:string;speed:number},signal?:AbortSignal){
-  const response=await request('tts',{method:'POST',body:JSON.stringify(input),signal});
+  const response=await apiRequest('fish/tts',{method:'POST',body:JSON.stringify(input),signal});
   if(!response.headers.get('content-type')?.includes('audio/mpeg'))throw new FishError('FISH_INVALID_AUDIO');
   const audio=await response.blob();if(!audio.size)throw new FishError('FISH_INVALID_AUDIO');return audio;
  },

@@ -143,3 +143,11 @@ Six visual style references are available in a gallery. The selected style is sa
 State lives in `project.video` (included in JSON export), or a separate browser draft when no project is selected. Timed demo jobs clean up on navigation; partial photo and animation results persist, and photo preparation can resume. No network generation requests are made. Storage errors are surfaced.
 
 Validation: `npx playwright test tests/video.spec.ts tests/script.spec.ts tests/voice.spec.ts tests/dashboard.spec.ts`. Video checks cover approvals, per-frame/batch animation, reloads, project isolation, resumable jobs, style selection, 20-minute scene counts, final scene duration, editing invalidation, pagination, and mobile layouts.
+
+### План сценарію через OpenAI
+
+Увійди через Google та відкрий **Налаштування → OpenAI**, щоб зберегти свій API-ключ. У розділі **Сценарій** натисни **Розібрати сценарій**. Перевір або відредагуй персонажів, локації та кадри з тривалістю, а потім натисни **Підтвердити план**. План зберігається разом із проєктом у цьому браузері. Після зміни сценарію потрібен повторний аналіз для підтвердження плану.
+
+Для локального запуску API використовуй Node.js 24.5+. Заповни `.env.server` за зразком `.env.server.example` та запусти `npm run dev:api` разом із Vite. OpenAI використовує ті самі налаштування Supabase і CORS, що й Fish Audio, та окремий `OPENAI_KEY_ENCRYPTION_KEY`. Задай `OPENAI_KEY_STORE` на постійному диску. Типова модель — `gpt-4.1-mini`, її можна змінити через `OPENAI_MODEL`. Дійсність ключа та дозвіл на модель перевіряються під час першого аналізу.
+
+Для GitHub Pages потрібен окремий HTTPS-сервер API, вказаний у `VITE_API_BASE_URL` під час збірки фронтенду. Якщо API Fish Audio вже розгорнуто, онови цей самий сервер і додай налаштування OpenAI зі зразка. Користувацькі ключі OpenAI вводяться лише через налаштування SAKYRA.
