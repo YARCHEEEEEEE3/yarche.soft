@@ -1,9 +1,10 @@
 import {ApiError,apiJson} from '../apiClient';
 
 export type PlanEntry={name:string;description:string};
-export type Shot={description:string;durationSeconds:number};
+export type Shot={title?:string;description:string;durationSeconds:number};
 export type Plan={characters:PlanEntry[];locations:PlanEntry[];shots:Shot[]};
-export type ProjectPlan={plan:Plan;source:string;confirmed:boolean;shotDurationSeconds?:number};
+export type SceneSettings={style:string;format:'16:9'|'9:16';shotDurationSeconds:number};
+export type ScenePreparation=SceneSettings&{plan:Plan;source:string};
 export type Language='uk'|'en';
 
 export const shotDurations=[4,5,6];
@@ -12,10 +13,11 @@ export const brainApi={
  status:(signal:AbortSignal)=>apiJson<{configured:boolean}>('openai/key',{signal}),
  saveKey:(key:string,signal:AbortSignal)=>apiJson<{configured:boolean}>('openai/key',{method:'PUT',body:JSON.stringify({key}),signal}),
  removeKey:(signal:AbortSignal)=>apiJson<{configured:boolean}>('openai/key',{method:'DELETE',signal}),
- analyze:(script:string,language:Language,shotDurationSeconds:number,signal:AbortSignal)=>apiJson<Plan>('openai/plan',{method:'POST',body:JSON.stringify({script,language,shotDurationSeconds}),signal}),
+ analyze:(script:string,language:Language,settings:SceneSettings,signal:AbortSignal)=>apiJson<Plan>('openai/plan',{method:'POST',body:JSON.stringify({script,language,...settings}),signal}),
 };
 
 const errors:Record<string,[string,string]>={
+ INVALID_SCENE_SETTINGS:['Перевір стиль і формат відео.','Check the visual style and video format.'],
  INVALID_SHOT_DURATION:['Обери 4, 5 або 6 секунд на кадр.','Select 4, 5 or 6 seconds per shot.'],
  SIGN_IN_REQUIRED:['Увійди через Google, щоб використовувати OpenAI.','Sign in with Google to use OpenAI.'],
  OPENAI_INVALID_KEY:['Введи API-ключ OpenAI, що починається з sk-.','Enter an OpenAI API key starting with sk-.'],

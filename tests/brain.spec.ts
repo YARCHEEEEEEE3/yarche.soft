@@ -1,37 +1,47 @@
 import {expect,test} from '@playwright/test';
 
-test('mobile plan can be edited, confirmed, restored and invalidated by script changes',async({page})=>{
+test('video prepares scenes only after style selection and keeps technical output hidden',async({page})=>{
  await page.setViewportSize({width:320,height:844});
  const script='Акі йде в сад.';
+ let requests=0;
  await page.route('**/api/openai/plan',async route=>{
-  expect(route.request().postDataJSON()).toEqual({script,language:'uk',shotDurationSeconds:6});
+  requests++;
+  expect(route.request().postDataJSON()).toEqual({script,language:'uk',shotDurationSeconds:6,style:'watercolor',format:'16:9'});
   await route.fulfill({json:{
-   characters:[{name:'Акі',description:'Головна героїня'}],
-   locations:[{name:'Сад',description:'Ранкова прогулянка'}],
-   shots:[{description:'Акі заходить у сад.',durationSeconds:6}],
+   characters:[{name:'Акі',description:'Технічний опис героїні'}],
+   locations:[{name:'Сад',description:'Технічний опис локації'}],
+   shots:[{title:'Прогулянка в саду',description:'Технічний промпт кадру',durationSeconds:6}],
   }});
  });
  await page.goto('/#scripts');
  const editor=page.getByLabel('Текст сценарію');
  await editor.fill(script);
+ await expect(page.getByRole('button',{name:'Розібрати сценарій'})).toHaveCount(0);
+ await page.getByRole('button',{name:'Далі: Озвучка'}).click();
+ await expect(page).toHaveURL(/#voice$/);
+ await page.getByRole('link',{name:'Далі: Відео'}).click();
+ const prepare=page.getByRole('button',{name:'Підготувати сцени'});
+ await expect(prepare).toBeDisabled();
  await page.getByLabel('Секунд на кадр').selectOption('6');
- await page.getByRole('button',{name:'Розібрати сценарій'}).click();
- const plan=page.getByRole('region',{name:'План сценарію'});
- await expect(plan.getByText('Чернетка плану')).toBeVisible();
- await plan.getByRole('region',{name:'Персонажі'}).getByLabel('Назва').fill('Акіко');
- await plan.getByLabel('Тривалість (с)').selectOption('4');
- await expect(plan.getByRole('heading',{name:'Кадри · 4 с'})).toBeVisible();
- await plan.getByRole('button',{name:'Підтвердити план'}).click();
- await expect(plan.getByText('План підтверджено')).toBeVisible();
+ await page.getByRole('button',{name:/Візуальний стиль/}).click();
+ await page.getByRole('button',{name:/Акварель/}).click();
+ expect(requests).toBe(0);
+ await prepare.click();
+ await expect(page.getByText('Сцени готові')).toBeVisible();
+ const gallery=page.getByRole('region',{name:'Сцени твоєї історії'});
+ await expect(gallery).toContainText('Прогулянка в саду');
+ await expect(gallery).toContainText('00:06');
+ await expect(page.getByText(/Технічний/)).toHaveCount(0);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(320);
  await page.reload();
- await expect(plan.getByLabel('Секунд на кадр')).toHaveValue('6');
- await expect(plan.getByLabel('Тривалість (с)')).toHaveValue('4');
- await expect(plan.getByRole('region',{name:'Персонажі'}).getByLabel('Назва')).toHaveValue('Акіко');
- await expect(plan.getByText('План підтверджено')).toBeVisible();
+ await expect(gallery).toContainText('Прогулянка в саду');
+ await expect(page.getByLabel('Секунд на кадр')).toHaveValue('6');
+ expect(requests).toBe(1);
+ await page.goto('/#scripts');
  await editor.fill('Змінений сценарій');
- await expect(plan.getByText(/Сценарій змінився/)).toBeVisible();
- await expect(plan.getByRole('button',{name:'Підтвердити план'})).toBeDisabled();
+ await page.goto('/#video');
+ await expect(gallery).toHaveCount(0);
+ expect(requests).toBe(1);
 });
 
 test('OpenAI settings send the key to the server and clear the password input',async({page})=>{

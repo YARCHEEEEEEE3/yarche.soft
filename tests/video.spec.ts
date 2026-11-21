@@ -36,7 +36,7 @@ test('editing a finished frame invalidates only that photo and requires approval
 });
 
 test('stopped generation resumes and settings stay separate between projects',async({page})=>{
- await page.addInitScript(()=>{if(!localStorage.getItem('sakyra.studio.projects.v1'))localStorage.setItem('sakyra.studio.projects.v1',JSON.stringify(['one','two'].map(id=>({id,name:id,idea:'',script:'Римська історія.',format:'16:9',cover:0,createdAt:'2026-11-05',updatedAt:'2026-11-05'}))));});
+ await page.addInitScript(()=>{if(!localStorage.getItem('sakyra.studio.projects.v1'))localStorage.setItem('sakyra.studio.projects.v1',JSON.stringify(['one','two'].map(id=>({id,name:id,idea:'',script:'',format:'16:9',cover:0,createdAt:'2026-11-05',updatedAt:'2026-11-05'}))));});
  await page.goto('/#video');await page.getByLabel('Довжина відео',{exact:true}).selectOption('1200');await scenePlan(page);await page.getByRole('button',{name:'Підтвердити сцени й створити фото',exact:true}).click();await expect(page.locator('.video-summary')).not.toContainText('Фото готові: 0');await page.getByRole('button',{name:'Зупинити демо',exact:true}).click();await page.reload();await expect(page.getByRole('button',{name:'Продовжити підготовку фото',exact:true})).toBeEnabled();
  await page.getByLabel('Вибери проєкт').selectOption('two');await expect(page.getByRole('button',{name:'Створити персонажів · демо',exact:true})).toBeVisible();await expect(page.getByLabel('Довжина відео',{exact:true})).toHaveValue('60');
  await page.getByLabel('Вибери проєкт').selectOption('one');await page.getByRole('button',{name:'Продовжити підготовку фото',exact:true}).click();await expect(page.locator('.video-job')).toHaveCount(0);await expect(page.locator('.video-summary')).toContainText('Фото готові: 150');

@@ -125,12 +125,13 @@ test('timeout, malformed audio and missing backend configuration fail clearly', 
 test('OpenAI keys are isolated and analysis validates structured responses without leaking upstream errors', async t => {
   const key = 'sk-fake-openai-private-key', script = 'Акі йде в сад.';
   const plan = { characters: [{ name: 'Акі', description: 'Героїня' }], locations: [], shots: [{ description: 'Акі йде.', durationSeconds: 4 }] };
-  let result = plan, upstreamStatus = 200, calls = 0;
+  let result = plan, upstreamStatus = 200, calls = 0, lastPayload;
   const { directory, request } = await fixture(t, undefined, async (url, options) => {
     calls++;
     assert.equal(url, 'https://api.openai.com/v1/responses');
     assert.equal(options.headers.Authorization, 'Bearer ' + key);
     const payload = JSON.parse(options.body);
+    lastPayload = payload;
     assert.equal(payload.input, script);
     assert.equal(payload.store, false);
     assert.equal(payload.text.format.strict, true);
@@ -153,6 +154,16 @@ test('OpenAI keys are isolated and analysis validates structured responses witho
   result = { ...plan, shots: [{ description: 'Акі йде.', durationSeconds: 40 }] };
   assert.deepEqual(await (await openai('plan', post({ script, language: 'uk', shotDurationSeconds: 4 }))).json(), plan);
   assert.equal((await (await openai('plan', post({ script, language: 'uk' }))).json()).shots[0].durationSeconds, 5);
+  const settings = { script, language: 'uk', style: 'watercolor', format: '9:16', shotDurationSeconds: 6 };
+  assert.equal((await openai('plan', post({ ...settings, style: 'unknown' }))).status, 400);
+  result = { ...plan, shots: [
+    { title: 'Вхід до саду', description: 'Акі відчиняє браму.' },
+    { title: 'Прогулянка', description: 'Акі йде до ставка.' },
+  ] };
+  assert.deepEqual((await (await openai('plan', post(settings))).json()).shots,
+    result.shots.map(shot => ({ ...shot, durationSeconds: 6 })));
+  assert.match(lastPayload.instructions, /exactly 6 seconds/);
+  assert.match(lastPayload.instructions, /watercolor style for a 9:16 frame/);
   result = { ...plan, shots: [{ description: '' }] };
   assert.deepEqual(await (await openai('plan', post({ script, language: 'uk' }))).json(), { code: 'OPENAI_INVALID_PLAN' });
   upstreamStatus = 401;
