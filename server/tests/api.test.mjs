@@ -149,8 +149,11 @@ test('OpenAI keys are isolated and analysis validates structured responses witho
   assert.equal((await openai('plan', post({ script, language: 'uk' }), 'b')).status, 409);
   assert.equal((await openai('plan', post({ script: ' ', language: 'uk' }))).status, 400);
   assert.equal(calls, 0);
-  assert.deepEqual(await (await openai('plan', post({ script, language: 'uk' }))).json(), plan);
-  result = { ...plan, shots: [{ description: 'Broken', durationSeconds: -1 }] };
+  assert.deepEqual(await (await openai('plan', post({ script, language: 'uk', shotDurationSeconds: 40 }))).json(), { code: 'INVALID_SHOT_DURATION' });
+  result = { ...plan, shots: [{ description: 'Акі йде.', durationSeconds: 40 }] };
+  assert.deepEqual(await (await openai('plan', post({ script, language: 'uk', shotDurationSeconds: 4 }))).json(), plan);
+  assert.equal((await (await openai('plan', post({ script, language: 'uk' }))).json()).shots[0].durationSeconds, 5);
+  result = { ...plan, shots: [{ description: '' }] };
   assert.deepEqual(await (await openai('plan', post({ script, language: 'uk' }))).json(), { code: 'OPENAI_INVALID_PLAN' });
   upstreamStatus = 401;
   assert.deepEqual(await (await openai('plan', post({ script, language: 'uk' }))).json(), { code: 'OPENAI_KEY_REJECTED' });

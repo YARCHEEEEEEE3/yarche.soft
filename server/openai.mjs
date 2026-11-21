@@ -7,7 +7,7 @@ const entry = object({ name: text, description: text });
 const schema = object({
   characters: list(entry),
   locations: list(entry),
-  shots: list(object({ description: text, durationSeconds: { type: 'integer' } })),
+  shots: list(object({ description: text })),
 });
 
 function validPlan(plan) {
@@ -16,16 +16,16 @@ function validPlan(plan) {
     item && validText(item.name, 120) && validText(item.description, 1200));
   return plan && validEntries(plan.characters) && validEntries(plan.locations) &&
     Array.isArray(plan.shots) && plan.shots.length >= 1 && plan.shots.length <= 80 &&
-    plan.shots.every(shot => shot && validText(shot.description, 1200) &&
-      Number.isInteger(shot.durationSeconds) && shot.durationSeconds >= 1 && shot.durationSeconds <= 600);
+    plan.shots.every(shot => shot && validText(shot.description, 1200));
 }
 
 export function createOpenAIClient({ model = 'gpt-4.1-mini', fetcher = fetch } = {}) {
   return {
-    async analyze(key, { script, language }, signal) {
+    async analyze(key, { script, language, shotDurationSeconds = 5 }, signal) {
       if (typeof script !== 'string' || !script.trim() || script.length > 20_000 || !['uk', 'en'].includes(language)) {
         throw new ApiError(400, 'INVALID_SCRIPT');
       }
+      if (![4, 5, 6].includes(shotDurationSeconds)) throw new ApiError(400, 'INVALID_SHOT_DURATION');
       let response;
       try {
         response = await fetcher('https://api.openai.com/v1/responses', {
@@ -39,7 +39,8 @@ export function createOpenAIClient({ model = 'gpt-4.1-mini', fetcher = fetch } =
               `Write all plan fields in ${language === 'uk' ? 'Ukrainian' : 'English'}.`,
               'Extract distinct characters and locations (up to 40 each, empty if absent), with names up to 120 characters.',
               'Return 1 to 80 chronologically ordered shots. Describe the visible action and identify relevant characters and locations in each shot description.',
-              'Estimate duration for action and spoken dialogue using whole seconds from 1 to 600 per shot. Keep each description under 1200 characters.',
+              `Every shot will last exactly ${shotDurationSeconds} seconds. Break long scenes, actions and dialogue into consecutive shots at natural cut points. Keep only the action and dialogue that can fit within each shot at natural speed.`,
+              'Cover the full script in order. Keep each description under 1200 characters.',
             ].join(' '),
             input: script,
             text: { format: { type: 'json_schema', name: 'sakyra_plan', strict: true, schema } },
@@ -54,7 +55,11 @@ export function createOpenAIClient({ model = 'gpt-4.1-mini', fetcher = fetch } =
         let plan;
         try { plan = JSON.parse(json); } catch { throw new ApiError(502, 'OPENAI_INVALID_PLAN'); }
         if (data.status !== 'completed' || !validPlan(plan)) throw new ApiError(502, 'OPENAI_INVALID_PLAN');
-        return plan;
+        return {
+          characters: plan.characters,
+          locations: plan.locations,
+          shots: plan.shots.map(({ description }) => ({ description, durationSeconds: shotDurationSeconds })),
+        };
       } catch (error) {
         if (error instanceof ApiError) throw error;
         if (error.name === 'TimeoutError') throw new ApiError(504, 'OPENAI_TIMEOUT');

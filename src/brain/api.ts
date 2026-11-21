@@ -3,17 +3,20 @@ import {ApiError,apiJson} from '../apiClient';
 export type PlanEntry={name:string;description:string};
 export type Shot={description:string;durationSeconds:number};
 export type Plan={characters:PlanEntry[];locations:PlanEntry[];shots:Shot[]};
-export type ProjectPlan={plan:Plan;source:string;confirmed:boolean};
+export type ProjectPlan={plan:Plan;source:string;confirmed:boolean;shotDurationSeconds?:number};
 export type Language='uk'|'en';
+
+export const shotDurations=[4,5,6];
 
 export const brainApi={
  status:(signal:AbortSignal)=>apiJson<{configured:boolean}>('openai/key',{signal}),
  saveKey:(key:string,signal:AbortSignal)=>apiJson<{configured:boolean}>('openai/key',{method:'PUT',body:JSON.stringify({key}),signal}),
  removeKey:(signal:AbortSignal)=>apiJson<{configured:boolean}>('openai/key',{method:'DELETE',signal}),
- analyze:(script:string,language:Language,signal:AbortSignal)=>apiJson<Plan>('openai/plan',{method:'POST',body:JSON.stringify({script,language}),signal}),
+ analyze:(script:string,language:Language,shotDurationSeconds:number,signal:AbortSignal)=>apiJson<Plan>('openai/plan',{method:'POST',body:JSON.stringify({script,language,shotDurationSeconds}),signal}),
 };
 
 const errors:Record<string,[string,string]>={
+ INVALID_SHOT_DURATION:['Обери 4, 5 або 6 секунд на кадр.','Select 4, 5 or 6 seconds per shot.'],
  SIGN_IN_REQUIRED:['Увійди через Google, щоб використовувати OpenAI.','Sign in with Google to use OpenAI.'],
  OPENAI_INVALID_KEY:['Введи API-ключ OpenAI, що починається з sk-.','Enter an OpenAI API key starting with sk-.'],
  OPENAI_KEY_REQUIRED:['Додай API-ключ OpenAI в налаштуваннях.','Add your OpenAI API key in Settings.'],
